@@ -1,4 +1,7 @@
 multilibtool_LIBRARIES += %D%/librdimon.a
+
+%C%_SPECS =
+
 %C%_librdimon_a_SOURCES = \
 	%D%/_exit.c \
 	%D%/_kill.c \
@@ -10,11 +13,22 @@ multilibtool_LIBRARIES += %D%/librdimon.a
 	$(AM_CPPFLAGS) \
 	-DSEMIHOST_V2 -DARM_RDI_MONITOR
 
-%C%_SPECS = \
+## Linux files.
+%C%_SPECS += %D%/linux.specs
+multilibtool_DATA += \
+	%D%/linux-crt0.o \
+	$(%C%_SPECS)
+multilibtool_LIBRARIES += %D%/libgloss-linux.a
+%C%_libgloss_linux_a_SOURCES = \
+        %D%/linux-syscalls1.c \
+        %D%/linux-syscalls0.S \
+	%D%/_exit.c
+
+%C%_SPECS += \
 	%D%/aem-v8-r.specs \
 	%D%/aem-validation.specs \
 	%D%/aem-ve.specs \
-	%D%/rdimon.specs
+	%D%/rdimon.specs \
 multilibtool_DATA += \
 	%D%/crt0.o \
 	%D%/rdimon-crt0.o \
