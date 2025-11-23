@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <sys/times.h>
 #include <sys/time.h>
+#include <time.h>
+#include <stdlib.h>
 
 // FIXME: newlib can't find these
 // #include <sys/utsname.h>
@@ -21,6 +23,7 @@ void test_out(const char *msg);
 bool io_test(void);
 bool pid_test(void);
 bool gid_tests(void);
+bool mem_tests(void);
 
 int
 main(int argc, char *argv[])
@@ -66,10 +69,53 @@ main(int argc, char *argv[])
   } else {
     test_out("FAIL: getgroups()\n");
   }
+
+
+  // FIXME: nanosleep undefined
+  // struct timespec remaining, request = { 5, 100 };
+  // int nan = nanosleep(&request, &remaining);
+  // FIXME: fork() and wait() undefined
+  // execve("hi", argv, argv);
+  mem_tests();
 }
 
 void test_out(const char *msg) {
   write(1, msg, strlen(msg));
+}
+
+bool mem_tests(void) {
+  char *mem = (char *)malloc(10);
+  *mem = 0x1;
+  if (*mem == 0x1) {
+    test_out("PASS: malloc()\n");
+  } else {
+    test_out("FAIL: malloc()\n");
+  }
+
+  free(mem);
+  // FIXME: this isn't really accurate
+  if ((long)mem > 0) {
+    test_out("PASS: free()\n");
+  } else {
+    test_out("FAIL: free()\n");
+  }
+
+  char *mem2 = (char *)calloc(1, 10);
+  if (*mem2 == 0x0) {
+    test_out("PASS: calloc()\n");
+  } else {
+    test_out("FAIL: calloc()\n");
+  }
+
+  char *mem3 = (char *)realloc(mem2, 15);
+  mem3[12] = 0x2;
+  if (mem3[12] == 0x2) {
+    test_out("PASS: realloc()\n");
+  } else {
+    test_out("FAIL: realloc()\n");
+  }
+
+  return false;
 }
 
 bool io_test(void) {
