@@ -6,12 +6,18 @@
 #include <errno.h>
 #include <stdint.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <unistd.h>
-
+#define __USE_ATFILE
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/stat.h>
 extern char _end[];
 static void *curbrk = _end;
 
 typedef int  pid_t;
+
+struct rusage;
 
 extern void *_brk(void *addr);
 void *_sbrk (long int);
@@ -26,16 +32,16 @@ extern int brk(void *addr);
 /* This gets defined if using I/O functuions like printf, but not if just
    using systcalls.
 */
-// int *__attribute__((weak)) __errno (void) {}
+int *__attribute__((weak)) __errno (void) {}
 
 pid_t wait(int *status)
 {
-        return _wait4(-1, status, 0, NULL);
+  return _wait4(-1, status, 0, NULL);
 }
 
 pid_t waitpid(pid_t pid, int *status, int options)
 {
-        return _wait4(pid, status, options, NULL);
+  return _wait4(pid, status, options, NULL);
 }
 
 int brk(void *addr)
@@ -70,6 +76,22 @@ int _set_errno(int n)
   return n;
 }
 
+unsigned alarm(unsigned seconds)
+{
+#if 0
+  // FIXME setitimer doesn't appear to exist on Android
+  struct itimerval it = { .it_value.tv_sec = seconds }, old = { 0 };
+  setitimer(ITIMER_REAL, &it, &old);
+  return old.it_value.tv_sec + !!old.it_value.tv_usec;
+#endif
+  _set_errno(ENOENT);
+}
+
+int chown(const char *pathname, uid_t owner, gid_t group)
+{
+  _set_errno(ENOENT);
+}
+
 // FIXME: These are needed for libgloss to link for AARCH64 Android
 int _isatty(int flag)
 {
@@ -81,14 +103,35 @@ int _getentropy(int flag)
   //return _reboot(0xfee1dead, 0x28121969, flag, NULL);
 }
 
-int _open(int flag)
+extern int _openat (int, const char *, int, ...);
+
+int _open(const char *pathname, int flags, ...)
 {
-  //return _reboot(0xfee1dead, 0x28121969, flag, NULL);
+  // -AT_FDCWD is -100
+  // int fd = _openat(AT_FDCWD, pathname, flags);
+  int fd = _openat(-100, pathname, flags);
+
+  return fd;
 }
 
-extern int _reboot(int magic, int magic2, int flag, void *arg);
+extern int _fstat(int, struct stat *);
 
-/* int reboot(int flag) */
+int _stat(const char *pathname, struct stat *stats)
+{
+  int fd = _open(pathname, O_RDONLY);
+  int ret = _fstat(fd, stats);
+
+  return fd;
+}
+
+/* // extern int _fchmod(int fd, mode_t mode); */
+/* int _chmod(const char *pathname, mode_t mode); */
+
+/* int _chmod(const char *pathname, int flags) */
 /* { */
-/*         return _reboot(0xfee1dead, 0x28121969, flag, NULL); */
+/*   int fd = _openat(AT_FDCWD, pathname, flags); */
+/*   // _fchmod(fd, flags); */
+/*   return fd; */
 /* } */
+
+extern int _reboot(int magic, int magic2, int flag, void *arg);

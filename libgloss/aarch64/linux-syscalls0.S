@@ -29,24 +29,26 @@
 #define SYSCALL2(name) SYSCALL3(name)
 /* #define SYSCALL5(name) SYSCALL6(name) */
 
+
+SYSCALL3(openat)
+// SYSCALL2(fstat) uneeded
+// SYSCALL3(lseek) uneeded
+// SYSCALL2(fstat) uneeded
+// SYSCALL2(stat)
+
 #ifdef FILESYSTEMS
 SYSCALL3(fchown)
 SYSCALL3(fchown)
-SYSCALL1(close)
 SYSCALL1(dup)
 SYSCALL2(dup2)
 SYSCALL2(link)
-SYSCALL3(lseek)
 SYSCALL2(lstat)
 SYSCALL2(mkdir)
 SYSCALL3(mknod)
-SYSCALL3(read)
 SYSCALL3(readlink)
 SYSCALL1(rmdir)
 SYSCALL3(fcntl)
-SYSCALL2(fstat)
 SYSCALL2(ftruncate)
-SYSCALL2(stat)
 SYSCALL2(symlink)
 SYSCALL3(lchown)
 SYSCALL1(chdir)
@@ -56,7 +58,6 @@ SYSCALL2(truncate)
 #endif
 
 /* This is the minimum set required for Hello World! */
-#if 1
 SYSCALL4(write)
 SYSCALL4(reboot)
 SYSCALL4(wait4)
@@ -68,18 +69,19 @@ SYSCALL1(exit)
 SYSCALL3(read)
 SYSCALL1(close)
 SYSCALL3(lseek)
-#endif
+
+// FIXME: these are just stubs
+// SYSCALL1(alarm)
+// SYSCALL3(chown)
 
 #ifdef NETWORKING
 SYSCALL5(select)
 SYSCALL2(socketcall)
 #endif
 
-/* FIXME: These come up as umndefined
-// SYSCALL1(alarm)
-// SYSCALL3(chown)
-// SYSCALL3(getdents)
+/* FIXME: These come up as undefined in newlib
 // SYSCALL0(getpgrp)
+// SYSCALL3(getdents)
 // SYSCALL0(pause)
 // SYSCALL1(pipe)
 // SYSCALL3(sigprocmask)
