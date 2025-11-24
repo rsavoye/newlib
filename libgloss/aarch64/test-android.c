@@ -11,6 +11,8 @@
 #include <sys/time.h>
 #include <time.h>
 #include <stdlib.h>
+#include <signal.h>
+#include <stdio.h>
 
 // FIXME: newlib can't find these
 // #include <sys/utsname.h>
@@ -20,15 +22,16 @@
 
 void test_out(const char *msg);
 
-bool io_test(void);
+bool file_io_tests(void);
 bool pid_test(void);
 bool gid_tests(void);
 bool mem_tests(void);
+bool str_tests(void);
 
 int
 main(int argc, char *argv[])
 {
-  io_test();
+  mem_tests();
   pid_test();
   gid_tests();
 
@@ -70,17 +73,34 @@ main(int argc, char *argv[])
     test_out("FAIL: getgroups()\n");
   }
 
+  file_io_tests();
 
   // FIXME: nanosleep undefined
   // struct timespec remaining, request = { 5, 100 };
   // int nan = nanosleep(&request, &remaining);
   // FIXME: fork() and wait() undefined
   // execve("hi", argv, argv);
-  mem_tests();
+
+  str_tests();
 }
 
 void test_out(const char *msg) {
   write(1, msg, strlen(msg));
+}
+
+bool str_tests(void)
+{
+  char buf[100];
+  memset(buf, 0, 100);
+  int test = 0x777;
+  sprintf(buf, "FIXME: %d", test);
+  if (buf[0] > 0) {
+    test_out("PASS: sprintf()\n");
+  } else {
+    test_out("FAIL: sprintf()\n");
+  }
+
+  iprintf("Fooby!\n");
 }
 
 bool mem_tests(void) {
@@ -118,16 +138,50 @@ bool mem_tests(void) {
   return false;
 }
 
-bool io_test(void) {
-#if 0
-  int foo = write(1, "Hello World!\n", 13);
-  int fd = open("foo.log", O_CREAT);
-  write(fd, "World Hello!\n", 13);
-  int fd1 = open("ndk.log", O_RDONLY);
-  char buf[100];
-  read(fd1, buf, 20);
+bool file_io_tests(void) {
+  // int foo = write(1, "Hello World!\n", 13);
+  int fd = open("./foo.log", O_WRONLY | O_CREAT, 0644);
+  if (fd > 0) {
+    struct stat data;
+    int ret = stat("./foo.log", &data);
+    if (ret > 0 || data.st_size <= 0) {
+      test_out("FAIL: create disk file after opening()\n");
+    } else {
+      test_out("PASS: create disk file()\n");
+      write(fd, "Hello World !\n", 13);
+    }
+  } else {
+    test_out("FAIL: create disk file()\n");
+  }
+  close(fd);
+
+  // read inlut file
+  int fd1 = open("./ndk.log", O_RDONLY);
+  char buf[10];
+  memset(buf, 0, 10);
+  read(fd1, buf, 10);
+  // write(1, buf, 10);
+  if (buf[0] != 0) {
+    test_out("PASS: read disk file()\n");
+  } else {
+    test_out("FAIL: read disk file()\n");
+  }
   // chmod("ndk.log", 0777);
-#endif
+
+  struct stat data;
+  int ret = stat("./ndk.log", &data);
+  if (data.st_size > 0) {
+    test_out("PASS: stat()\n");
+  } else {
+    test_out("FAIL: stat()\n");
+  }
+
+  off_t off = lseek(fd1, 0x2, SEEK_SET);
+  if (off > 0) {
+    test_out("PASS: lseek()\n");
+  } else {
+    test_out("FAIL: lseek()\n");
+  }
   return true;
 }
 
