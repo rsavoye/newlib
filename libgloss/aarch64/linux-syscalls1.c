@@ -12,6 +12,8 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <sys/utime.h>
+
 extern char _end[];
 static void *curbrk = _end;
 
@@ -114,6 +116,17 @@ int _open(const char *pathname, int flags, ...)
   return fd;
 }
 
+extern int _unlinkat(int, const char *, int, ...);
+
+int _unlink(const char *pathname)
+{
+  // -AT_FDCWD is -100
+  // int fd = _openat(AT_FDCWD, pathname, flags);
+  int fd = _unlinkat(-100, pathname, AT_REMOVEDIR);
+
+  return fd;
+}
+
 extern int _fstat(int, struct stat *);
 
 int _stat(const char *pathname, struct stat *stats)
@@ -124,4 +137,29 @@ int _stat(const char *pathname, struct stat *stats)
   return fd;
 }
 
-int _socket(int domain, int type, int protocol);
+// extern int lstat (const char *file, struct stat *st);
+
+/* Status of a link (by name).  */
+int _lstat(const char *file, struct stat *st)
+{
+  // FIXME: use stat to the file the link points to stats()
+  /* struct kernel_stat kst; */
+  /* int rv = syscall_errno (SYS_lstat, 2, file, &kst, 0, 0, 0, 0); */
+  /* _conv_stat (st, &kst); */
+  /* return rv; */
+}
+
+int lstat(const char *file, struct stat *st)
+{
+  // FIXME: use stat to the file the link points to stats()
+  /* struct kernel_stat kst; */
+  /* int rv = syscall_errno (SYS_lstat, 2, file, &kst, 0, 0, 0, 0); */
+  /* _conv_stat (st, &kst); */
+  /* return rv; */
+}
+
+// extern int utime(const char *filename, const struct utimbuf *_Nullable times);
+
+int utime(const char *filename, const struct utimbuf *_Nullable times)
+{
+}

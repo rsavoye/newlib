@@ -36,9 +36,11 @@ SYSCALL3(openat)
 // SYSCALL2(fstat) uneeded
 // SYSCALL2(stat)
 
+SYSCALL3(fchown)
+SYSCALL3(fchmod)
+SYSCALL1(unlinkat)
+
 #ifdef FILESYSTEMS
-SYSCALL3(fchown)
-SYSCALL3(fchown)
 SYSCALL1(dup)
 SYSCALL2(dup2)
 SYSCALL2(link)
@@ -52,7 +54,6 @@ SYSCALL2(ftruncate)
 SYSCALL2(symlink)
 SYSCALL3(lchown)
 SYSCALL1(chdir)
-SYSCALL1(unlink)
 SYSCALL1(sync)
 SYSCALL2(truncate)
 #endif
@@ -174,7 +175,9 @@ ALIAS(sendto);
 ALIAS(getsockopt);
 ALIAS(getsockname);
 ALIAS(getpeername);
-
+ALIAS(fchown)
+ALIAS(unlinkat)
+ALIAS(fchmod)
 
 #if 0
 SOCKETCALL4(recv, RECV)
