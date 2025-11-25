@@ -11,8 +11,11 @@
 #include <sys/time.h>
 #include <time.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <stdio.h>
+#include <pthread.h>
+#include <signal.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 // FIXME: newlib can't find these
 // #include <sys/utsname.h>
@@ -27,6 +30,7 @@ bool pid_test(void);
 bool gid_tests(void);
 bool mem_tests(void);
 bool str_tests(void);
+bool net_tests(void);
 
 int
 main(int argc, char *argv[])
@@ -82,12 +86,54 @@ main(int argc, char *argv[])
   // execve("hi", argv, argv);
 
   str_tests();
+  net_tests();
 }
 
 void test_out(const char *msg) {
   write(1, msg, strlen(msg));
 }
 
+#define PORT 8888
+bool net_tests(void)
+{
+  int fd,bid, lid, aid;
+  struct sockaddr_in server, client;
+  // Creating socket file descriptor
+  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    test_out("FAIL: socket()\n");
+  } else {
+    test_out("PASS: socket()\n");
+  }
+  server.sin_family = AF_INET;
+  server.sin_port = 8888;
+  server.sin_addr.s_addr = htonl(INADDR_ANY);
+  // server.sin_addr.s_addr = inet_add
+  if ((bid = bind(fd, (struct sockaddr *)&server, sizeof(server))) < 0) {
+      test_out("FAIL: bind()\n");
+    } else {
+      test_out("PASS: bind()\n");
+    }
+// We don't always aant to wait for an incoming connection, this is just to
+// sure networking works.
+#ifdef NETWORKING
+  if ((lid = listen(fd, 1)) < 0) {
+      test_out("FAIL: listen()\n");
+    } else {
+      test_out("PASS: listen()\n");
+    }
+  socklen_t slen = sizeof(client);
+  if ((aid = accept(fd, (struct sockaddr *)&client, &slen)) < 0) {
+      test_out("FAIL: accept()\n");
+    } else {
+      test_out("PASS: accept()\n");
+    }
+#endif
+  // accept
+  // bind
+  // connect
+}
+
+    int server_fd, new_socket;
 bool str_tests(void)
 {
   char buf[100];
@@ -96,11 +142,12 @@ bool str_tests(void)
   sprintf(buf, "FIXME: %d", test);
   if (buf[0] > 0) {
     test_out("PASS: sprintf()\n");
+    int server_fd, new_socket;
   } else {
     test_out("FAIL: sprintf()\n");
   }
 
-  iprintf("Fooby!\n");
+  // printf("Fooby!\n");
 }
 
 bool mem_tests(void) {

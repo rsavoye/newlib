@@ -27,7 +27,7 @@
 #define SYSCALL3(name) SYSCALL4(name)
 #define SYSCALL1(name) SYSCALL3(name)
 #define SYSCALL2(name) SYSCALL3(name)
-/* #define SYSCALL5(name) SYSCALL6(name) */
+#define SYSCALL5(name) SYSCALL4(name)
 
 
 SYSCALL3(openat)
@@ -70,14 +70,20 @@ SYSCALL3(read)
 SYSCALL1(close)
 SYSCALL3(lseek)
 
-// FIXME: these are just stubs
-// SYSCALL1(alarm)
-// SYSCALL3(chown)
-
-#ifdef NETWORKING
-SYSCALL5(select)
-SYSCALL2(socketcall)
-#endif
+SYSCALL2(socket)
+SYSCALL2(accept)
+SYSCALL2(connect)
+SYSCALL2(bind)
+SYSCALL2(listen)
+SYSCALL2(socketpair)
+SYSCALL2(shutdown);
+SYSCALL2(recvfrom);
+SYSCALL2(recvmsg);
+SYSCALL2(sendmsg);
+SYSCALL2(sendto);
+SYSCALL2(getsockopt);
+SYSCALL2(getsockname);
+SYSCALL2(getpeername);
 
 /* FIXME: These come up as undefined in newlib
 // SYSCALL0(getpgrp)
@@ -154,44 +160,23 @@ ALIAS(utime)
 ALIAS(vfork)
 ALIAS(wait4)
 ALIAS(reboot)
+ALIAS(socket)
+ALIAS(connect)
+ALIAS(accept)
+ALIAS(bind)
+ALIAS(listen)
+ALIAS(socketpair)
+ALIAS(shutdown);
+ALIAS(recvfrom);
+ALIAS(recvmsh);
+ALIAS(sendmsg);
+ALIAS(sendto);
+ALIAS(getsockopt);
+ALIAS(getsockname);
+ALIAS(getpeername);
+
 
 #if 0
-# define SOCKETCALL(name, NAME) \
-	GLOBAL(name); \
-	push { r0 - r3 }; \
-	mov r0, #SYS_ ## NAME; \
-	b _socketcall_tail; \
-	SIZE(name)
-
-FUNC(_socketcall_tail)
-	mov r1, sp
-	push { lr }
-	bl _socketcall
-	pop { r3 }
-	add sp, #16
-
-#define SOCKETCALL2(name, NAME) SOCKETCALL(name, NAME)
-#define SOCKETCALL3(name, NAME) SOCKETCALL(name, NAME)
-#define SOCKETCALL4(name, NAME) SOCKETCALL(name, NAME)
-#define SOCKETCALL5(name, NAME) SOCKETCALL(name, NAME)
-#define SOCKETCALL6(name, NAME) SOCKETCALL(name, NAME)
-
-SOCKETCALL3(accept, ACCEPT)
-SOCKETCALL3(bind, BIND)
-SOCKETCALL3(connect, CONNECT)
-SOCKETCALL3(getpeername, GETPEERNAME)
-SOCKETCALL3(getsockname, GETSOCKNAME)
-SOCKETCALL5(getsockopt, GETSOCKOPT)
-SOCKETCALL2(listen, LISTEN)
 SOCKETCALL4(recv, RECV)
-SOCKETCALL6(recvfrom, RECVFROM)
-SOCKETCALL3(recvmsg, RECVMSG)
 SOCKETCALL4(send, SEND)
-SOCKETCALL3(sendmsg, SENDMSG)
-SOCKETCALL6(sendto, SENDTO)
-SOCKETCALL5(setsockopt, SETSOCKOPT)
-SOCKETCALL2(shutdown, SHUTDOWN)
-SOCKETCALL3(socket, SOCKET)
-SOCKETCALL4(socketpair, SOCKETPAIR)
 #endif
-

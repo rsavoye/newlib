@@ -124,14 +124,4 @@ int _stat(const char *pathname, struct stat *stats)
   return fd;
 }
 
-/* // extern int _fchmod(int fd, mode_t mode); */
-/* int _chmod(const char *pathname, mode_t mode); */
-
-/* int _chmod(const char *pathname, int flags) */
-/* { */
-/*   int fd = _openat(AT_FDCWD, pathname, flags); */
-/*   // _fchmod(fd, flags); */
-/*   return fd; */
-/* } */
-
-extern int _reboot(int magic, int magic2, int flag, void *arg);
+int _socket(int domain, int type, int protocol);
