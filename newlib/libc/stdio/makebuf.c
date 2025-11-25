@@ -43,6 +43,12 @@ __smakebuf_r (struct _reent *ptr,
   size_t size;
   int couldbetty;
 
+#if 1	/* FIXME: force unbuffered till we figure out why fp gets optimized out.*/
+      fp->_bf._base = fp->_p = fp->_nbuf;
+      fp->_bf._size = 1;
+      return;
+#endif
+  
   if (fp->_flags & __SNBF)
     {
       fp->_bf._base = fp->_p = fp->_nbuf;
