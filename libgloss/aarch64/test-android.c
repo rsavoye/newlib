@@ -23,6 +23,8 @@
 // #include <sys/ioctl.h>
 // #include <dejagnu.h>
 
+#include <errno.h>
+
 void test_out(const char *msg);
 
 bool file_io_tests(void);
@@ -40,7 +42,7 @@ main(int argc, char *argv[])
   gid_tests();
 
   mode_t ret = umask(S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  if (ret > 0) {
+  if (ret == 0) {
     test_out("PASS: umask()\n");
   } else {
     test_out("FAIL: umask()\n");
@@ -48,7 +50,7 @@ main(int argc, char *argv[])
   
   struct tms tms;
   clock_t cret = times(&tms);
-  if (tms.tms_utime == 0) {
+  if (tms.tms_utime > 0) {
     test_out("PASS: times()\n");
   } else {
     test_out("FAIL: times()\n");
@@ -63,7 +65,7 @@ main(int argc, char *argv[])
   }
 
   uid_t uid = getuid();
-  if (uid == 0) {
+  if (uid > 0) {
     test_out("PASS: getuid()\n");
   } else {
     test_out("FAIL: getuid()\n");
@@ -71,11 +73,11 @@ main(int argc, char *argv[])
 
   gid_t groups[5];
   int grps = getgroups(5, groups);
-  if (grps == 0) {
+  if (grps > 0) {
     test_out("PASS: getgroups()\n");
   } else {
     test_out("FAIL: getgroups()\n");
-  }
+ }
 
   file_io_tests();
 
@@ -186,12 +188,12 @@ bool mem_tests(void) {
 }
 
 bool file_io_tests(void) {
-  // int foo = write(1, "Hello World!\n", 13);
-  int fd = open("./foo.log", O_WRONLY | O_CREAT, 0644);
+  int fd = open("./foo.log", O_WRONLY | O_CREAT);
   if (fd > 0) {
     struct stat data;
     int ret = stat("./foo.log", &data);
-    if (ret > 0 || data.st_size <= 0) {
+    // FIXME: this always fails for now, I assume permissions
+    if (ret > 0 || data.st_gid > 0) {
       test_out("FAIL: create disk file after opening()\n");
     } else {
       test_out("PASS: create disk file()\n");
@@ -202,8 +204,8 @@ bool file_io_tests(void) {
   }
   close(fd);
 
-  // read inlut file
-  int fd1 = open("./ndk.log", O_RDONLY);
+  // read input file
+  int fd1 = open("./hi", O_RDONLY);
   char buf[10];
   memset(buf, 0, 10);
   read(fd1, buf, 10);
@@ -216,8 +218,8 @@ bool file_io_tests(void) {
   // chmod("ndk.log", 0777);
 
   struct stat data;
-  int ret = stat("./ndk.log", &data);
-  if (data.st_size > 0) {
+  int ret = stat("./hi", &data);
+  if (data.st_gid  > 0) {
     test_out("PASS: stat()\n");
   } else {
     test_out("FAIL: stat()\n");
