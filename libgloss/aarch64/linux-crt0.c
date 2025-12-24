@@ -11,8 +11,8 @@ int main(int argc, char *argv[]);
 static int _main(int argc, char *argv[]) __attribute__((noreturn));
 extern void _exit(int status);
 
-char *hi = "Hello World!\n";
-char *ih = "World Hello!\n";
+extern void __libc_init_array (void);
+extern void __libc_fini_array (void);
 
 void _start(void)
 {
@@ -22,6 +22,8 @@ void _start(void)
 
 static int _main(int argc, char *argv[])
 {
+  __libc_init_array();		/* needed for C++ constructors */
   // environ = argv + argc + 1;
+  __libc_fini_array();
   _exit(main(argc, argv));
 }
