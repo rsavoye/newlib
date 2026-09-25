@@ -24,6 +24,6 @@ static int _main(int argc, char *argv[])
 {
   __libc_init_array();		/* needed for C++ constructors */
   // environ = argv + argc + 1;
-  __libc_fini_array();
   _exit(main(argc, argv));
+  __libc_fini_array();
 }
